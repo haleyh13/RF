@@ -1,0 +1,161 @@
+const express = require('express');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment variables from .env file
+dotenv.config();
+
+const app = express();
+
+// ✅ Updated CORS setup for live domain
+app.use(cors({
+  origin: ['https://www.radhefabrications.com'], // live domain
+  methods: ['GET', 'POST'],
+  credentials: false
+}));
+
+app.use(express.json());
+
+// ✅ Serve frontend files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Nodemailer transporter using domain email
+const transporter = nodemailer.createTransport({
+  host: 'mail.radhefabrications.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: 'info@radhefabrications.com',
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// ✅ SMTP Test Route
+app.get('/test', async (req, res) => {
+  try {
+    await transporter.sendMail({
+      from: '"Radhe Fabrications" <info@radhefabrications.com>',
+      to: 'info@radhefabrications.com',
+      subject: 'SMTP Test',
+      text: '✅ SMTP connection is working correctly.',
+    });
+
+    res.send('✅ Test email sent successfully.');
+  } catch (error) {
+    console.error('❌ SMTP Error:', error);
+    res.send('❌ Error sending email: ' + error.message);
+  }
+});
+
+// ✅ Contact Form Route
+app.post('/send', async (req, res) => {
+  const { name, email, subject, message } = req.body;
+
+  const mailOptions = {
+    from: `"${name}" <${email}>`,
+    to: 'info@radhefabrications.com',
+    subject: `Website Contact: ${subject}`,
+    html: `
+      <h3>📩 New Inquiry – Radhe Fabrication</h3>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong><br>${message}</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Message sent successfully!' });
+  } catch (error) {
+    console.error('Email error:', error);
+    res.status(500).json({ message: 'Failed to send message.' });
+  }
+});
+
+const PORT = 5500;
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+});
+
+
+
+
+2nd 
+
+const express = require('express');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment variables from .env file
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Serve frontend files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Nodemailer transporter using domain email
+const transporter = nodemailer.createTransport({
+  host: 'mail.radhefabrications.com',
+  port: 465,
+  secure: true, // SSL
+  auth: {
+    user: 'info@radhefabrications.com',
+    pass: process.env.EMAIL_PASS, // Must match cPanel email password
+  },
+});
+
+// ✅ Test Route
+app.get('/test', async (req, res) => {
+  try {
+    await transporter.sendMail({
+      from: '"Radhe Fabrications" <info@radhefabrications.com>',
+      to: 'info@radhefabrications.com',
+      subject: 'SMTP Test',
+      text: '✅ SMTP connection is working correctly.',
+    });
+
+    res.send('✅ Test email sent successfully.');
+  } catch (error) {
+    console.error('❌ SMTP Error:', error);
+    res.send('❌ Error sending email: ' + error.message);
+  }
+});
+
+// ✅ Contact Form Route
+app.post('/send', async (req, res) => {
+  const { name, email, subject, message } = req.body;
+
+  const mailOptions = {
+    from: `"${name}" <${email}>`,
+    to: 'info@radhefabrications.com',
+    subject: `Website Contact: ${subject}`,
+    html: `
+      <h3>📩 New Inquiry – Radhe Fabrication</h3>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong><br>${message}</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Message sent successfully!' });
+  } catch (error) {
+    console.error('Email error:', error);
+    res.status(500).json({ message: 'Failed to send message.' });
+  }
+});
+
+const PORT = 5500;
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+});
